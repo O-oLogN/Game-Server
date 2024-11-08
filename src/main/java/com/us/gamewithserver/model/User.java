@@ -1,6 +1,7 @@
 package com.us.gamewithserver.model;
 
 import lombok.Data;
+import lombok.Setter;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,6 +23,8 @@ public class User {
     @Size(min = 4, max = 20)
     private String username;
 
+    // Add a method to hash the password before saving
+    @Setter
     @NotBlank(message = "Password is required")
     @Size(min = 6)
     private String password;
@@ -35,11 +38,6 @@ public class User {
 
     // Getters and setters
     // ...
-
-    // Add a method to hash the password before saving
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
     public void hashPassword() {
         this.password = BCrypt.hashpw(this.password, BCrypt.gensalt(10));
