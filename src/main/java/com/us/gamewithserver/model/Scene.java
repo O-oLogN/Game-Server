@@ -10,8 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "scenes")
 public class Scene {
     @Id
-    @Getter
-    @Setter
     private String id;
     private String name;
 }

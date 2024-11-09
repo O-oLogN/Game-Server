@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "player_rankings")
 public class PlayerRanking implements Comparable<PlayerRanking> {
     @Id
-    @Getter
     private String id;
     private String userId;
     private float finalPoints;
