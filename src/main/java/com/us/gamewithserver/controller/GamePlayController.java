@@ -39,14 +39,9 @@ public class GamePlayController {
         return this.gamePlayService.newGame(newGameRequest);
     }
 
-    @PostMapping("/rank")
-    public ResponseEntity<?> playerRank(@Valid @RequestBody String userId, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
-        }
-        RankingPlayerRequest rankingPlayerRequest = new RankingPlayerRequest();
-        rankingPlayerRequest.setUserId(userId);
-        return this.gamePlayService.rankPlayersAndGetRankByUserId(rankingPlayerRequest);
+    @GetMapping("/rank")
+    public ResponseEntity<?> playerRank() {
+        return this.gamePlayService.rankPlayers();
     }
 
     @PostMapping("/update-death-count")

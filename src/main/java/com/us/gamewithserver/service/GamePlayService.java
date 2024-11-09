@@ -3,11 +3,14 @@ package com.us.gamewithserver.service;
 import com.us.gamewithserver.model.GameProgress;
 import com.us.gamewithserver.model.PlayerRanking;
 import com.us.gamewithserver.model.Scene;
+import com.us.gamewithserver.model.User;
 import com.us.gamewithserver.payload.GamePlayRequests.requests.*;
 import com.us.gamewithserver.payload.GamePlayRequests.responses.GameContinueResponse;
+import com.us.gamewithserver.payload.GamePlayRequests.responses.PlayerRankingResponse;
 import com.us.gamewithserver.repository.GameProgressRepository;
 import com.us.gamewithserver.repository.PlayerRankingRepository;
 import com.us.gamewithserver.repository.SceneRepository;
+import com.us.gamewithserver.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +24,14 @@ public class GamePlayService {
     private final GameProgressRepository gameProgressRepository;
     private final PlayerRankingRepository playerRankingRepository;
     private final SceneRepository sceneRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public GamePlayService(GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository, SceneRepository sceneRepository) {
+    public GamePlayService(UserRepository userRepository, GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository, SceneRepository sceneRepository) {
         this.gameProgressRepository = gamePlayRepository;
         this.playerRankingRepository = playerRankingRepository;
         this.sceneRepository = sceneRepository;
+        this.userRepository = userRepository;
     }
 
     public ResponseEntity<?> updateCurrentPosition(UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest) {
@@ -101,8 +106,7 @@ public class GamePlayService {
         return (ArrayList<GameProgress>)this.gameProgressRepository.findAll();
     }
 
-    public ResponseEntity<?> rankPlayersAndGetRankByUserId(RankingPlayerRequest rankingPlayerRequest) {
-        String userId = rankingPlayerRequest.getUserId();
+    public ResponseEntity<?> rankPlayers() {
         AtomicBoolean gameProgressIsFound = new AtomicBoolean(true);
         AtomicBoolean playerRankingIsFound = new AtomicBoolean(true);
         ArrayList<GameProgress> allUserGameProgresses = this.getAllGameProgresses();
@@ -142,16 +146,28 @@ public class GamePlayService {
         }
         ArrayList<PlayerRanking> allPlayerRankings = (ArrayList<PlayerRanking>) this.playerRankingRepository.findAll();
         Collections.sort(allPlayerRankings);
-        for (int i = 0; i < allPlayerRankings.size(); ++i) {
-            allPlayerRankings.get(i).setRank(i + 1);
-        }
-        this.playerRankingRepository.saveAll(allPlayerRankings);
+        AtomicBoolean userFound = new AtomicBoolean(true);
 
-        Optional<PlayerRanking> optionalPlayerRanking = this.playerRankingRepository.findByUserId(userId);
-        if (optionalPlayerRanking.isPresent()) {
-           return ResponseEntity.ok().body(optionalPlayerRanking.get());
+        ArrayList<String> usernameList = new ArrayList<>();
+        ArrayList<Float> finalFinishTimeList = new ArrayList<>();
+        ArrayList<Integer> totalDeathCountList = new ArrayList<>();
+        ArrayList<Float> finalPointsList = new ArrayList<>();
+        allPlayerRankings.forEach(playerRanking -> {
+            Optional<User> optionalUser = this.userRepository.findById(playerRanking.getUserId());
+            if (optionalUser.isPresent()) {
+                usernameList.add(optionalUser.get().getUsername());
+                finalFinishTimeList.add(playerRanking.getFinishTime());
+                totalDeathCountList.add(playerRanking.getTotalDeaths());
+                finalPointsList.add(playerRanking.getFinalPoints());
+            }
+            else {
+                userFound.set(false);
+            }
+        });
+        if (!userFound.get()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player ranking not found");
+        return ResponseEntity.ok().body(new PlayerRankingResponse(usernameList, finalFinishTimeList, totalDeathCountList, finalPointsList));
     }
 
     public ResponseEntity<?> newGame(NewGameRequest newGameRequest) {
