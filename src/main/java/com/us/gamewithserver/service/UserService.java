@@ -68,4 +68,12 @@ public class UserService {
         return session;
     }
 
+    public Session getUserIdBySessionToken(String sessionToken) throws Exception {
+        Session session = sessionRepository.findBySessionToken(sessionToken)
+                .orElseGet(() -> sessionRepository.findBySessionToken(sessionToken).orElse(null));
+        if (session == null) {
+            throw new Exception("Session not found");
+        }
+        return session;
+    }
 }

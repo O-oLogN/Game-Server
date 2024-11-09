@@ -12,8 +12,6 @@ import java.util.Date;
 @Document(collection = "game_progress")
 public class GameProgress {
     @Id
-    @Getter
-    @Setter
     private String id;
     private String userId;
     private String sceneId;

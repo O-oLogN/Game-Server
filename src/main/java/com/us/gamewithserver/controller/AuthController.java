@@ -2,6 +2,7 @@ package com.us.gamewithserver.controller;
 
 import com.us.gamewithserver.model.Session;
 import com.us.gamewithserver.model.User;
+import com.us.gamewithserver.payload.GetUserIdBySessionTokenResponse;
 import com.us.gamewithserver.payload.LoginRequest;
 import com.us.gamewithserver.payload.SessionResponse;
 import com.us.gamewithserver.service.UserService;
@@ -62,5 +63,13 @@ public class AuthController {
         }
     }
 
-
+    @GetMapping("/user-id")
+    public ResponseEntity<?> getUserId(@Valid @RequestBody String sessionToken, BindingResult result) throws Exception {
+        if (result.hasErrors()) {
+            String errorMessage = result.getAllErrors().get(0).getDefaultMessage();
+            return ResponseEntity.badRequest().body(errorMessage);
+        }
+        Session session = userService.getUserIdBySessionToken(sessionToken);
+        return ResponseEntity.ok(new GetUserIdBySessionTokenResponse(session.getUserId()));
+    }
 }
