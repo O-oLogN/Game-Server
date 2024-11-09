@@ -63,7 +63,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/user-id")
+    @PostMapping("/user-id")
     public ResponseEntity<?> getUserId(@Valid @RequestBody String sessionToken, BindingResult result) throws Exception {
         if (result.hasErrors()) {
             String errorMessage = result.getAllErrors().get(0).getDefaultMessage();

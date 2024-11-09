@@ -188,15 +188,16 @@ public class GamePlayService {
             else {
                 throw new RuntimeException("Scene not found");
             }
-            gameProgress.setScenePoints(new float[0]);
+            gameProgress.setScenePoints(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
+            gameProgress.setSceneFinishTimes(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
             gameProgress.setCurrentPosition("");
             gameProgress.setLastUpdated(null);
             this.gameProgressRepository.save(gameProgress);
 
             playerRanking.setFinalPoints(0);
+            playerRanking.setRank(null);
             playerRanking.setTotalDeaths(0);
             playerRanking.setFinishTime(0);
-            playerRanking.setRank(-1);
             this.playerRankingRepository.save(playerRanking);
 
             return ResponseEntity.ok().body("Reset player's game progress and rank successfully");
