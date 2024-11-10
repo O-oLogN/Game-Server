@@ -49,7 +49,7 @@ public class GamePlayController {
     }
 
     @PostMapping("/update-player-position")
-    public ResponseEntity<?> updateUserPosition(@Valid @RequestBody UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest, String sceneId, String position, BindingResult bindingResult) {
+    public ResponseEntity<?> updateUserPosition(@Valid @RequestBody UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }

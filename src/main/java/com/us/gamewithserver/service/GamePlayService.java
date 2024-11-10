@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class GamePlayService {
@@ -33,7 +34,7 @@ public class GamePlayService {
     public ResponseEntity<?> updateCurrentPosition(UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest) {
         String userId = updatePlayerCurrentPositionRequest.getUserId();
         Integer sceneIndex = updatePlayerCurrentPositionRequest.getSceneIndex();
-        String currentPosition = updatePlayerCurrentPositionRequest.getPosition();
+        String currentPosition = updatePlayerCurrentPositionRequest.getPlayerPosition();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
@@ -148,9 +149,12 @@ public class GamePlayService {
         ArrayList<Float> finalFinishTimeList = new ArrayList<>();
         ArrayList<Integer> totalDeathCountList = new ArrayList<>();
         ArrayList<Float> finalPointsList = new ArrayList<>();
+        AtomicInteger rank = new AtomicInteger();
         allPlayerRankings.forEach(playerRanking -> {
             Optional<User> optionalUser = this.userRepository.findById(playerRanking.getUserId());
             if (optionalUser.isPresent()) {
+                rank.getAndIncrement();
+                playerRanking.setRank(rank.get());
                 usernameList.add(optionalUser.get().getUsername());
                 finalFinishTimeList.add(playerRanking.getFinishTime());
                 totalDeathCountList.add(playerRanking.getTotalDeaths());

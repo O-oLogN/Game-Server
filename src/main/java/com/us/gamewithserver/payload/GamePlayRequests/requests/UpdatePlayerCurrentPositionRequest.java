@@ -9,7 +9,7 @@ public class UpdatePlayerCurrentPositionRequest {
     @NotBlank
     private String userId;
     @NotBlank
-    private String position;
+    private String playerPosition;
     @NotBlank
     private int sceneIndex;
 }
