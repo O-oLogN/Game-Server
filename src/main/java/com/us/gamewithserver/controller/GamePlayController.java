@@ -20,22 +20,18 @@ public class GamePlayController {
     }
 
     @PostMapping("/continue")
-    public ResponseEntity<?> continueGame(@Valid @RequestBody String userId, BindingResult bindingResult) {
+    public ResponseEntity<?> continueGame(@Valid @RequestBody GameContinueRequest gameContinueRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
-        GameContinueRequest gameContinueRequest = new GameContinueRequest();
-        gameContinueRequest.setUserId(userId);
         return this.gamePlayService.gameContinue(gameContinueRequest);
     }
 
     @PostMapping("/new-game")
-    public ResponseEntity<?> newGame(@Valid @RequestBody String userId, BindingResult bindingResult) {
+    public ResponseEntity<?> newGame(@Valid @RequestBody NewGameRequest newGameRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
-        NewGameRequest newGameRequest = new NewGameRequest();
-        newGameRequest.setUserId(userId);
         return this.gamePlayService.newGame(newGameRequest);
     }
 
@@ -45,60 +41,42 @@ public class GamePlayController {
     }
 
     @PostMapping("/update-death-count")
-    public ResponseEntity<?> updateUserDeathCount(@Valid @RequestBody String userId, BindingResult bindingResult) {
+    public ResponseEntity<?> updateUserDeathCount(@Valid @RequestBody UpdateDeathCountRequest updateDeathCountRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
-        UpdateDeathCountRequest updateDeathCountRequest = new UpdateDeathCountRequest();
-        updateDeathCountRequest.setUserId(userId);
         return this.gamePlayService.updateDeathCount(updateDeathCountRequest);
     }
 
     @PostMapping("/update-player-position")
-    public ResponseEntity<?> updateUserPosition(@Valid @RequestBody String userId, String sceneId, String position, BindingResult bindingResult) {
+    public ResponseEntity<?> updateUserPosition(@Valid @RequestBody UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
-        UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest = new UpdatePlayerCurrentPositionRequest();
-        updatePlayerCurrentPositionRequest.setUserId(userId);
-        updatePlayerCurrentPositionRequest.setSceneId(sceneId);
-        updatePlayerCurrentPositionRequest.setPosition(position);
         return this.gamePlayService.updateCurrentPosition(updatePlayerCurrentPositionRequest);
     }
 
     @PostMapping("/update-checkpoint-location")
-    public ResponseEntity<?> updateCheckpointLocation(@Valid @RequestBody String userId, String sceneId, String checkpointLocation, BindingResult bindingResult) {
+    public ResponseEntity<?> updateCheckpointLocation(@Valid @RequestBody UpdateCheckpointLocationRequest updateCheckpointLocationRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
-        UpdateCheckpointLocationRequest updateCheckpointLocationRequest = new UpdateCheckpointLocationRequest();
-        updateCheckpointLocationRequest.setUserId(userId);
-        updateCheckpointLocationRequest.setSceneId(sceneId);
-        updateCheckpointLocationRequest.setCheckpointLocation(checkpointLocation);
         return this.gamePlayService.updateCheckpointLocation(updateCheckpointLocationRequest);
     }
 
     @PostMapping("/update-scene-finish-time")
-    public ResponseEntity<?> updateSceneFinishTime(@Valid @RequestBody String userId, int sceneIndex, float sceneFinishTime, BindingResult bindingResult) {
+    public ResponseEntity<?> updateSceneFinishTime(@Valid @RequestBody UpdateSceneFinishTimeRequest updateSceneFinishTimeRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
-        UpdateSceneFinishTimeRequest updateSceneFinishTimeRequest = new UpdateSceneFinishTimeRequest();
-        updateSceneFinishTimeRequest.setUserId(userId);
-        updateSceneFinishTimeRequest.setSceneIndex(sceneIndex);
-        updateSceneFinishTimeRequest.setSceneFinishTime(sceneFinishTime);
         return this.gamePlayService.updateSceneFinishTime(updateSceneFinishTimeRequest);
     }
 
     @PostMapping("/update-scene-points")
-    public ResponseEntity<?> updateScenePoints(@Valid @RequestBody String userId, int sceneIndex, float scenePoints, BindingResult bindingResult) {
+    public ResponseEntity<?> updateScenePoints(@Valid @RequestBody UpdateScenePointsRequest updateScenePointsRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
-        UpdateScenePointsRequest updateScenePointsRequest = new UpdateScenePointsRequest();
-        updateScenePointsRequest.setUserId(userId);
-        updateScenePointsRequest.setSceneIndex(sceneIndex);
-        updateScenePointsRequest.setScenePoint(scenePoints);
         return this.gamePlayService.updateScenePoints(updateScenePointsRequest);
     }
 }

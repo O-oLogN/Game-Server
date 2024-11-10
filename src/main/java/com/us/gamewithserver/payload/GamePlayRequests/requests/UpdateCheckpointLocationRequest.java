@@ -11,5 +11,5 @@ public class UpdateCheckpointLocationRequest {
     @NotBlank
     private String checkpointLocation;
     @NotBlank
-    private String sceneId;
+    private int sceneIndex;
 }

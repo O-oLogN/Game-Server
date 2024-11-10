@@ -1,7 +1,7 @@
 package com.us.gamewithserver.model;
 
 import lombok.Data;
-import lombok.Getter;
+import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -25,7 +25,7 @@ public class PlayerRanking implements Comparable<PlayerRanking> {
     }
 
     @Override
-    public int compareTo(PlayerRanking o) {
+    public int compareTo(@NonNull PlayerRanking o) {
         if (this.finalPoints != o.finalPoints) return Float.compare(this.finalPoints, o.finalPoints);
         if (this.finishTime != o.finishTime) return Float.compare(this.finishTime, o.finishTime);
         if (this.totalDeaths != o.totalDeaths) return this.totalDeaths - o.totalDeaths;

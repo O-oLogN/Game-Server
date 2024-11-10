@@ -3,21 +3,19 @@ package com.us.gamewithserver.controller;
 import com.us.gamewithserver.model.PasswordResetToken;
 import com.us.gamewithserver.model.Session;
 import com.us.gamewithserver.model.User;
+import com.us.gamewithserver.payload.GetUserIdBySessionTokenRequest;
 import com.us.gamewithserver.payload.GetUserIdBySessionTokenResponse;
 import com.us.gamewithserver.payload.LoginRequest;
 import com.us.gamewithserver.payload.PasswordChangeRequest;
 import com.us.gamewithserver.payload.SessionResponse;
 import com.us.gamewithserver.repository.PasswordResetTokenRepository;
-import com.us.gamewithserver.repository.SceneRepository;
 import com.us.gamewithserver.repository.SessionRepository;
 import com.us.gamewithserver.repository.UserRepository;
 import com.us.gamewithserver.service.EmailService;
 import com.us.gamewithserver.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
@@ -39,8 +37,6 @@ public class AuthController {
     private EmailService emailService;
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
-    @Autowired
-    private SceneRepository sceneRepository;
 
     @Autowired
     public AuthController(UserService userService) {
@@ -87,12 +83,12 @@ public class AuthController {
     }
 
     @PostMapping("/user-id")
-    public ResponseEntity<?> getUserId(@Valid @RequestBody String sessionToken, BindingResult result) throws Exception {
+    public ResponseEntity<?> getUserId(@Valid @RequestBody GetUserIdBySessionTokenRequest getUserIdBySessionTokenRequest, BindingResult result) throws Exception {
         if (result.hasErrors()) {
             String errorMessage = result.getAllErrors().get(0).getDefaultMessage();
             return ResponseEntity.badRequest().body(errorMessage);
         }
-        Session session = userService.getUserIdBySessionToken(sessionToken);
+        Session session = userService.getUserIdBySessionToken(getUserIdBySessionTokenRequest.getSessionToken());
         return ResponseEntity.ok(new GetUserIdBySessionTokenResponse(session.getUserId()));
     }
     @PostMapping("/change-password")
