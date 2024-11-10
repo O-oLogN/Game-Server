@@ -15,7 +15,7 @@ public class GameProgress {
     @Id
     private String id;
     private String userId;
-    private String sceneId;
+    private Integer sceneIndex;
     private String checkpointLocation;
     private String currentPosition;
     private float healthStatus;
@@ -25,9 +25,9 @@ public class GameProgress {
     private Date lastUpdated;
 
 
-    public GameProgress(String userId, String sceneId, String checkpointLocation, String currentPosition, float healthStatus, int deathCount, float[] scenePoints, float[] sceneFinishTimes, Date lastUpdated) {
+    public GameProgress(String userId, Integer sceneIndex, String checkpointLocation, String currentPosition, float healthStatus, int deathCount, float[] scenePoints, float[] sceneFinishTimes, Date lastUpdated) {
         this.userId = userId;
-        this.sceneId = sceneId;
+        this.sceneIndex = sceneIndex;
         this.checkpointLocation = checkpointLocation;
         this.currentPosition = currentPosition;
         this.healthStatus = healthStatus;

@@ -2,14 +2,12 @@ package com.us.gamewithserver.service;
 
 import com.us.gamewithserver.model.GameProgress;
 import com.us.gamewithserver.model.PlayerRanking;
-import com.us.gamewithserver.model.Scene;
 import com.us.gamewithserver.model.User;
 import com.us.gamewithserver.payload.GamePlayRequests.requests.*;
 import com.us.gamewithserver.payload.GamePlayRequests.responses.GameContinueResponse;
 import com.us.gamewithserver.payload.GamePlayRequests.responses.PlayerRankingResponse;
 import com.us.gamewithserver.repository.GameProgressRepository;
 import com.us.gamewithserver.repository.PlayerRankingRepository;
-import com.us.gamewithserver.repository.SceneRepository;
 import com.us.gamewithserver.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,25 +21,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class GamePlayService {
     private final GameProgressRepository gameProgressRepository;
     private final PlayerRankingRepository playerRankingRepository;
-    private final SceneRepository sceneRepository;
     private final UserRepository userRepository;
 
     @Autowired
-    public GamePlayService(UserRepository userRepository, GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository, SceneRepository sceneRepository) {
+    public GamePlayService(UserRepository userRepository, GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository) {
         this.gameProgressRepository = gamePlayRepository;
         this.playerRankingRepository = playerRankingRepository;
-        this.sceneRepository = sceneRepository;
         this.userRepository = userRepository;
     }
 
     public ResponseEntity<?> updateCurrentPosition(UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest) {
         String userId = updatePlayerCurrentPositionRequest.getUserId();
-        String sceneId = updatePlayerCurrentPositionRequest.getSceneId();
+        Integer sceneIndex = updatePlayerCurrentPositionRequest.getSceneIndex();
         String currentPosition = updatePlayerCurrentPositionRequest.getPosition();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
-            gameProgress.setSceneId(sceneId);
+            gameProgress.setSceneIndex(sceneIndex);
             gameProgress.setCurrentPosition(currentPosition);
             gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
             this.gameProgressRepository.save(gameProgress);
@@ -54,12 +50,12 @@ public class GamePlayService {
 
     public ResponseEntity<?> updateCheckpointLocation(UpdateCheckpointLocationRequest updateCheckpointLocationRequest) {
         String userId = updateCheckpointLocationRequest.getUserId();
-        String sceneId = updateCheckpointLocationRequest.getSceneId();
+        Integer sceneIndex = updateCheckpointLocationRequest.getSceneIndex();
         String checkpointLocation = updateCheckpointLocationRequest.getCheckpointLocation();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
-            gameProgress.setSceneId(sceneId);
+            gameProgress.setSceneIndex(sceneIndex);
             gameProgress.setCheckpointLocation(checkpointLocation);
             gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
             this.gameProgressRepository.save(gameProgress);
@@ -180,14 +176,7 @@ public class GamePlayService {
             gameProgress.setCheckpointLocation("");
             gameProgress.setHealthStatus(1);
             gameProgress.setDeathCount(0);
-            Optional<Scene> optionalScene = this.sceneRepository.findByName("1stScene");
-            if (optionalScene.isPresent())
-            {
-                gameProgress.setSceneId(optionalScene.get().getId());
-            }
-            else {
-                throw new RuntimeException("Scene not found");
-            }
+            gameProgress.setSceneIndex(1);
             gameProgress.setScenePoints(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
             gameProgress.setSceneFinishTimes(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
             gameProgress.setCurrentPosition("");
@@ -215,14 +204,7 @@ public class GamePlayService {
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
-            Optional<Scene> optionalScene = this.sceneRepository.findById(gameProgress.getSceneId());
-            if (optionalScene.isPresent()) {
-                Scene scene = optionalScene.get();
-                return ResponseEntity.ok( new GameContinueResponse(scene.getName(), gameProgress.getCurrentPosition()));
-            }
-            else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scene not found");
-            }
+            return ResponseEntity.ok().body(new GameContinueResponse(gameProgress.getSceneIndex(), gameProgress.getCurrentPosition()));
         }
         else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");

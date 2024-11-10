@@ -48,7 +48,7 @@ public class UserService {
         // Create new document in game_progress, player_rankings collections
         this.gameProgressRepository.save(new GameProgress(
                 savedUser.getId(),
-                "",
+                1,
                 "",
                 "",
                 1,

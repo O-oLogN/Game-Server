@@ -11,5 +11,5 @@ public class UpdatePlayerCurrentPositionRequest {
     @NotBlank
     private String position;
     @NotBlank
-    private String sceneId;
+    private int sceneIndex;
 }
