@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 
 @Data
-public class RankingPlayerRequest {
-    @NotBlank (message = "Please provide userId")
-    private String userId;
+public class GetUserIdBySessionTokenRequest {
+    @NotBlank
+    private String sessionToken;
 }

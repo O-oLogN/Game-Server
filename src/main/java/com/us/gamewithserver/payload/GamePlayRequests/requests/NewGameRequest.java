@@ -1,4 +1,4 @@
-package com.us.gamewithserver.payload;
+package com.us.gamewithserver.payload.GamePlayRequests.requests;
 
 import lombok.Data;
 

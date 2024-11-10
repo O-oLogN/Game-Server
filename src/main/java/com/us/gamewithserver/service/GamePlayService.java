@@ -4,81 +4,101 @@ import com.us.gamewithserver.model.GameProgress;
 import com.us.gamewithserver.model.PlayerRanking;
 import com.us.gamewithserver.model.Scene;
 import com.us.gamewithserver.model.User;
+import com.us.gamewithserver.payload.GamePlayRequests.requests.*;
+import com.us.gamewithserver.payload.GamePlayRequests.responses.GameContinueResponse;
+import com.us.gamewithserver.payload.GamePlayRequests.responses.PlayerRankingResponse;
 import com.us.gamewithserver.repository.GameProgressRepository;
 import com.us.gamewithserver.repository.PlayerRankingRepository;
 import com.us.gamewithserver.repository.SceneRepository;
 import com.us.gamewithserver.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class GamePlayService {
     private final GameProgressRepository gameProgressRepository;
     private final PlayerRankingRepository playerRankingRepository;
     private final SceneRepository sceneRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public GamePlayService(GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository, SceneRepository sceneRepository) {
+    public GamePlayService(UserRepository userRepository, GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository, SceneRepository sceneRepository) {
         this.gameProgressRepository = gamePlayRepository;
         this.playerRankingRepository = playerRankingRepository;
         this.sceneRepository = sceneRepository;
+        this.userRepository = userRepository;
     }
 
-    public GameProgress saveCurrentPosition(String userId, String sceneId, String currentPosition, Date lastUpdated) {
+    public ResponseEntity<?> updateCurrentPosition(UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest) {
+        String userId = updatePlayerCurrentPositionRequest.getUserId();
+        String sceneId = updatePlayerCurrentPositionRequest.getSceneId();
+        String currentPosition = updatePlayerCurrentPositionRequest.getPosition();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
             gameProgress.setSceneId(sceneId);
             gameProgress.setCurrentPosition(currentPosition);
-            gameProgress.setLastUpdated(lastUpdated);
-            return this.gameProgressRepository.save(gameProgress);
+            gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
+            this.gameProgressRepository.save(gameProgress);
+            return ResponseEntity.ok().build();
         }
         else {
-            throw new RuntimeException("Game progress not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
         }
     }
 
-    public GameProgress saveCheckpointLocation(String userId, String sceneId, String checkpointLocation, Date lastUpdated) {
+    public ResponseEntity<?> updateCheckpointLocation(UpdateCheckpointLocationRequest updateCheckpointLocationRequest) {
+        String userId = updateCheckpointLocationRequest.getUserId();
+        String sceneId = updateCheckpointLocationRequest.getSceneId();
+        String checkpointLocation = updateCheckpointLocationRequest.getCheckpointLocation();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
             gameProgress.setSceneId(sceneId);
             gameProgress.setCheckpointLocation(checkpointLocation);
-            gameProgress.setLastUpdated(lastUpdated);
-            return this.gameProgressRepository.save(gameProgress);
+            gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
+            this.gameProgressRepository.save(gameProgress);
+            return ResponseEntity.ok().build();
         }
         else {
-            throw new RuntimeException("Game progress not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
         }
     }
 
-    public GameProgress updateGameProgressScenePoints(String userId, String sceneId, int sceneIndex, float points, Date lastUpdated) {
+    public ResponseEntity<?> updateScenePoints(UpdateScenePointsRequest updateScenePointsRequest) {
+        String userId = updateScenePointsRequest.getUserId();
+        int sceneIndex = updateScenePointsRequest.getSceneIndex();
+        float points = updateScenePointsRequest.getScenePoint();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
-            gameProgress.setSceneId(sceneId);
             gameProgress.getScenePoints()[sceneIndex - 1] = points;
-            gameProgress.setLastUpdated(lastUpdated);
-            return this.gameProgressRepository.save(gameProgress);
+            gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
+            this.gameProgressRepository.save(gameProgress);
+            return ResponseEntity.ok().build();
         }
         else {
-            throw new RuntimeException("Game progress not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
         }
     }
 
-    public GameProgress updateDeathCount(String userId, Date lastUpdated) {
+    public ResponseEntity<?> updateDeathCount(UpdateDeathCountRequest updateDeathCountRequest) {
+        String userId = updateDeathCountRequest.getUserId();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
             gameProgress.setDeathCount(gameProgress.getDeathCount() + 1);
-            gameProgress.setLastUpdated(lastUpdated);
-            return this.gameProgressRepository.save(gameProgress);
+            gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
+            this.gameProgressRepository.save(gameProgress);
+            return ResponseEntity.ok().build();
         }
         else {
-            throw new RuntimeException("Game progress not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
         }
     }
 
@@ -86,7 +106,9 @@ public class GamePlayService {
         return (ArrayList<GameProgress>)this.gameProgressRepository.findAll();
     }
 
-    public PlayerRanking rankPlayersAndGetRankByUserId(String userId) {
+    public ResponseEntity<?> rankPlayers() {
+        AtomicBoolean gameProgressIsFound = new AtomicBoolean(true);
+        AtomicBoolean playerRankingIsFound = new AtomicBoolean(true);
         ArrayList<GameProgress> allUserGameProgresses = this.getAllGameProgresses();
         allUserGameProgresses.forEach(userGameProgress -> {
             if (this.playerRankingRepository.existsByUserId(userGameProgress.getUserId())) {
@@ -109,30 +131,47 @@ public class GamePlayService {
                     this.playerRankingRepository.save(playerRanking);
                 }
                 else {
-                    throw new RuntimeException("Player ranking not found");
+                    gameProgressIsFound.set(false);
                 }
             }
             else {
-                throw new RuntimeException("Game progress not found");
+                playerRankingIsFound.set(false);
             }
         });
+        if (!playerRankingIsFound.get()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player ranking not found");
+        }
+        if (!gameProgressIsFound.get()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
+        }
         ArrayList<PlayerRanking> allPlayerRankings = (ArrayList<PlayerRanking>) this.playerRankingRepository.findAll();
         Collections.sort(allPlayerRankings);
-        for (int i = 0; i < allPlayerRankings.size(); ++i) {
-            allPlayerRankings.get(i).setRank(i + 1);
-        }
-        this.playerRankingRepository.saveAll(allPlayerRankings);
+        AtomicBoolean userFound = new AtomicBoolean(true);
 
-        Optional<PlayerRanking> optionalPlayerRanking = this.playerRankingRepository.findByUserId(userId);
-        if (optionalPlayerRanking.isPresent()) {
-            return optionalPlayerRanking.get();
+        ArrayList<String> usernameList = new ArrayList<>();
+        ArrayList<Float> finalFinishTimeList = new ArrayList<>();
+        ArrayList<Integer> totalDeathCountList = new ArrayList<>();
+        ArrayList<Float> finalPointsList = new ArrayList<>();
+        allPlayerRankings.forEach(playerRanking -> {
+            Optional<User> optionalUser = this.userRepository.findById(playerRanking.getUserId());
+            if (optionalUser.isPresent()) {
+                usernameList.add(optionalUser.get().getUsername());
+                finalFinishTimeList.add(playerRanking.getFinishTime());
+                totalDeathCountList.add(playerRanking.getTotalDeaths());
+                finalPointsList.add(playerRanking.getFinalPoints());
+            }
+            else {
+                userFound.set(false);
+            }
+        });
+        if (!userFound.get()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-        else {
-            throw new RuntimeException("Player ranking not found");
-        }
+        return ResponseEntity.ok().body(new PlayerRankingResponse(usernameList, finalFinishTimeList, totalDeathCountList, finalPointsList));
     }
 
-    public void resetGameProgressAndRank(String userId) {
+    public ResponseEntity<?> newGame(NewGameRequest newGameRequest) {
+        String userId = newGameRequest.getUserId();
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         Optional<PlayerRanking> optionalPlayerRanking = this.playerRankingRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent() && optionalPlayerRanking.isPresent()) {
@@ -149,22 +188,60 @@ public class GamePlayService {
             else {
                 throw new RuntimeException("Scene not found");
             }
-            gameProgress.setScenePoints(new float[0]);
+            gameProgress.setScenePoints(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
+            gameProgress.setSceneFinishTimes(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
             gameProgress.setCurrentPosition("");
             gameProgress.setLastUpdated(null);
             this.gameProgressRepository.save(gameProgress);
 
             playerRanking.setFinalPoints(0);
+            playerRanking.setRank(null);
             playerRanking.setTotalDeaths(0);
             playerRanking.setFinishTime(0);
-            playerRanking.setRank(-1);
             this.playerRankingRepository.save(playerRanking);
+
+            return ResponseEntity.ok().body("Reset player's game progress and rank successfully");
         }
         else if (optionalGameProgress.isEmpty()) {
-            throw new RuntimeException("Game progress not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
         }
         else {
-            throw new RuntimeException("Player ranking not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player ranking not found");
         }
     }
+
+    public ResponseEntity<?> gameContinue(GameContinueRequest gameContinueRequest) {
+        String userId = gameContinueRequest.getUserId();
+        Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
+        if (optionalGameProgress.isPresent()) {
+            GameProgress gameProgress = optionalGameProgress.get();
+            Optional<Scene> optionalScene = this.sceneRepository.findById(gameProgress.getSceneId());
+            if (optionalScene.isPresent()) {
+                Scene scene = optionalScene.get();
+                return ResponseEntity.ok( new GameContinueResponse(scene.getName(), gameProgress.getCurrentPosition()));
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Scene not found");
+            }
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
+        }
+    }
+
+    public ResponseEntity<?> updateSceneFinishTime(UpdateSceneFinishTimeRequest updateSceneFinishTimeRequest) {
+        String userId = updateSceneFinishTimeRequest.getUserId();
+        int sceneIndex = updateSceneFinishTimeRequest.getSceneIndex();
+        float sceneFinishTime = updateSceneFinishTimeRequest.getSceneFinishTime();
+        Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
+        if (optionalGameProgress.isPresent()) {
+            GameProgress gameProgress = optionalGameProgress.get();
+            gameProgress.getSceneFinishTimes()[sceneIndex - 1] = sceneFinishTime;
+            this.gameProgressRepository.save(gameProgress);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
+    }
 }
+
+

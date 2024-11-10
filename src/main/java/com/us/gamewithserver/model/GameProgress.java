@@ -1,5 +1,6 @@
 package com.us.gamewithserver.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,8 +13,6 @@ import java.util.Date;
 @Document(collection = "game_progress")
 public class GameProgress {
     @Id
-    @Getter
-    @Setter
     private String id;
     private String userId;
     private String sceneId;
@@ -25,4 +24,16 @@ public class GameProgress {
     private float[] sceneFinishTimes;
     private Date lastUpdated;
 
+
+    public GameProgress(String userId, String sceneId, String checkpointLocation, String currentPosition, float healthStatus, int deathCount, float[] scenePoints, float[] sceneFinishTimes, Date lastUpdated) {
+        this.userId = userId;
+        this.sceneId = sceneId;
+        this.checkpointLocation = checkpointLocation;
+        this.currentPosition = currentPosition;
+        this.healthStatus = healthStatus;
+        this.deathCount = deathCount;
+        this.scenePoints = scenePoints;
+        this.sceneFinishTimes = sceneFinishTimes;
+        this.lastUpdated = lastUpdated;
+    }
 }
