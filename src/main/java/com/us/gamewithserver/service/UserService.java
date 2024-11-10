@@ -1,9 +1,12 @@
 package com.us.gamewithserver.service;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.us.gamewithserver.model.Session;
 import com.us.gamewithserver.model.User;
+import com.us.gamewithserver.payload.LoginRequest;
 import com.us.gamewithserver.repository.SessionRepository;
 import com.us.gamewithserver.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,7 @@ import java.util.UUID;
 
 @Service
 public class UserService {
+
 
     @Autowired
     private SessionRepository sessionRepository;
@@ -66,6 +70,30 @@ public class UserService {
         sessionRepository.save(session);
 
         return session;
+    }
+
+
+
+    public String changePassword(String userId, String currentPassword, String newPassword) throws Exception {
+        // get user from session
+
+        // Retrieve the user by userId
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        // Verify the current password
+        if (!user.checkPassword(currentPassword)) {
+            throw new Exception("Current password is incorrect");
+        }
+
+        // Hash the new password
+        user.setPassword(newPassword);
+        user.hashPassword();
+
+        // Save the updated user
+        userRepository.save(user);
+
+        return "Password changes successfully!";
     }
 
 }
