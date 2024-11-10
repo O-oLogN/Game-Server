@@ -10,12 +10,14 @@ import java.util.Date;
 
 @Service
 public class EmailService {
+
     @Autowired
     private JavaMailSender javaMailSender;
     @Autowired
     private JavaMailSenderImpl mailSender;
 
     public void sendPasswordResetEmail(String toEmail, String resetToken) {
+        String fromEmail = "tranhung10122003@gmail.com";
         String subject = "Password Reset Request";
         String message = "You requested a password reset. Use the following token to reset your password:\n\n"
                 + resetToken + "\n\n"
@@ -23,6 +25,7 @@ public class EmailService {
 
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(toEmail);
+        mailMessage.setFrom(fromEmail);
         mailMessage.setSubject(subject);
         mailMessage.setText(message);
         mailMessage.setSentDate(new Date());
