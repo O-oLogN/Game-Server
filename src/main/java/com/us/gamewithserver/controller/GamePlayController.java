@@ -79,4 +79,14 @@ public class GamePlayController {
         }
         return this.gamePlayService.updateScenePoints(updateScenePointsRequest);
     }
+
+    @GetMapping("/get-all-solo-stats")
+    public ResponseEntity<?> getAllSoloStats() {
+        return this.gamePlayService.getAllSoloStats();
+    }
+
+    @GetMapping("/get-multi-player-match-history")
+    public ResponseEntity<?> getMultiPlayerMatchHistory() {
+        return this.gamePlayService.getMultiPlayerMatchHistory();
+    }
 }
