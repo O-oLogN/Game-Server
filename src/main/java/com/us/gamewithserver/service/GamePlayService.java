@@ -1,14 +1,12 @@
 package com.us.gamewithserver.service;
 
-import com.us.gamewithserver.model.GameProgress;
-import com.us.gamewithserver.model.PlayerRanking;
-import com.us.gamewithserver.model.User;
+import com.us.gamewithserver.model.*;
 import com.us.gamewithserver.payload.GamePlayRequests.requests.*;
 import com.us.gamewithserver.payload.GamePlayRequests.responses.GameContinueResponse;
+import com.us.gamewithserver.payload.GamePlayRequests.responses.GetAllSoloStatsResponse;
+import com.us.gamewithserver.payload.GamePlayRequests.responses.GetMultiPlayerMatchHistoryResponse;
 import com.us.gamewithserver.payload.GamePlayRequests.responses.PlayerRankingResponse;
-import com.us.gamewithserver.repository.GameProgressRepository;
-import com.us.gamewithserver.repository.PlayerRankingRepository;
-import com.us.gamewithserver.repository.UserRepository;
+import com.us.gamewithserver.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +21,16 @@ public class GamePlayService {
     private final GameProgressRepository gameProgressRepository;
     private final PlayerRankingRepository playerRankingRepository;
     private final UserRepository userRepository;
+    private final SoloStatsRepository soloStatsRepository;
+    private final MultiPlayerMatchHistoryRepository multiPlayerMatchHistoryRepository;
 
     @Autowired
-    public GamePlayService(UserRepository userRepository, GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository) {
+    public GamePlayService(UserRepository userRepository, GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository, SoloStatsRepository soloStatsRepository, MultiPlayerMatchHistoryRepository multiPlayerMatchHistoryRepository) {
         this.gameProgressRepository = gamePlayRepository;
         this.playerRankingRepository = playerRankingRepository;
         this.userRepository = userRepository;
+        this.soloStatsRepository = soloStatsRepository;
+        this.multiPlayerMatchHistoryRepository = multiPlayerMatchHistoryRepository;
     }
 
     public ResponseEntity<?> updateCurrentPosition(UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest) {
@@ -227,6 +229,15 @@ public class GamePlayService {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
+    }
+
+    public ResponseEntity<?> getAllSoloStats() {
+        return ResponseEntity.ok().body(new GetAllSoloStatsResponse(new ArrayList<>(soloStatsRepository.findAll())));
+    }
+
+    public ResponseEntity<?> getMultiPlayerMatchHistory() {
+        ArrayList<MultiPlayerMatchHistory> multiPlayerMatchHistoryList = new ArrayList<>(multiPlayerMatchHistoryRepository.findAll());
+        return ResponseEntity.ok().body(new GetMultiPlayerMatchHistoryResponse(multiPlayerMatchHistoryList));
     }
 }
 
