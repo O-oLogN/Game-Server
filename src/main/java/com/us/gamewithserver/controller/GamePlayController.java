@@ -89,4 +89,14 @@ public class GamePlayController {
     public ResponseEntity<?> getMultiPlayerMatchHistory() {
         return this.gamePlayService.getMultiPlayerMatchHistory();
     }
+
+    @PostMapping("/get-solo-match-history")
+    public ResponseEntity<?> getSoloMatchHistory(@RequestBody GetSoloMatchHistoryByUsernameRequest getSoloMatchHistoryByUsernameRequest) {
+        return this.gamePlayService.getSoloMatchHistoryByUsername(getSoloMatchHistoryByUsernameRequest);
+    }
+
+    @PostMapping("/get-team-match-history")
+    public ResponseEntity<?> getTeamMatchHistory(@RequestBody GetTeamMatchHistoryByTeamNameRequest getTeamMatchHistoryByTeamNameRequest) {
+        return this.gamePlayService.getTeamMatchHistoryByTeamName(getTeamMatchHistoryByTeamNameRequest);
+    }
 }
