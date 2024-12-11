@@ -2,10 +2,7 @@ package com.us.gamewithserver.service;
 
 import com.us.gamewithserver.model.*;
 import com.us.gamewithserver.payload.GamePlayRequests.requests.*;
-import com.us.gamewithserver.payload.GamePlayRequests.responses.GameContinueResponse;
-import com.us.gamewithserver.payload.GamePlayRequests.responses.GetAllSoloStatsResponse;
-import com.us.gamewithserver.payload.GamePlayRequests.responses.GetMultiPlayerMatchHistoryResponse;
-import com.us.gamewithserver.payload.GamePlayRequests.responses.PlayerRankingResponse;
+import com.us.gamewithserver.payload.GamePlayRequests.responses.*;
 import com.us.gamewithserver.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,14 +20,24 @@ public class GamePlayService {
     private final UserRepository userRepository;
     private final SoloStatsRepository soloStatsRepository;
     private final MultiPlayerMatchHistoryRepository multiPlayerMatchHistoryRepository;
+    private final SoloMatchHistoryRepository soloMatchHistoryRepository;
+    private final TeamMatchHistoryRepository teamMatchHistoryRepository;
 
     @Autowired
-    public GamePlayService(UserRepository userRepository, GameProgressRepository gamePlayRepository, PlayerRankingRepository playerRankingRepository, SoloStatsRepository soloStatsRepository, MultiPlayerMatchHistoryRepository multiPlayerMatchHistoryRepository) {
+    public GamePlayService(UserRepository userRepository,
+                           GameProgressRepository gamePlayRepository,
+                           PlayerRankingRepository playerRankingRepository,
+                           SoloStatsRepository soloStatsRepository,
+                           MultiPlayerMatchHistoryRepository multiPlayerMatchHistoryRepository,
+                           SoloMatchHistoryRepository soloMatchHistoryRepository,
+                           TeamMatchHistoryRepository teamMatchHistoryRepository) {
         this.gameProgressRepository = gamePlayRepository;
         this.playerRankingRepository = playerRankingRepository;
         this.userRepository = userRepository;
         this.soloStatsRepository = soloStatsRepository;
         this.multiPlayerMatchHistoryRepository = multiPlayerMatchHistoryRepository;
+        this.soloMatchHistoryRepository = soloMatchHistoryRepository;
+        this.teamMatchHistoryRepository = teamMatchHistoryRepository;
     }
 
     public ResponseEntity<?> updateCurrentPosition(UpdatePlayerCurrentPositionRequest updatePlayerCurrentPositionRequest) {
@@ -238,6 +245,35 @@ public class GamePlayService {
     public ResponseEntity<?> getMultiPlayerMatchHistory() {
         ArrayList<MultiPlayerMatchHistory> multiPlayerMatchHistoryList = new ArrayList<>(multiPlayerMatchHistoryRepository.findAll());
         return ResponseEntity.ok().body(new GetMultiPlayerMatchHistoryResponse(multiPlayerMatchHistoryList));
+    }
+
+    public ResponseEntity<?> getSoloMatchHistoryByUsername(GetSoloMatchHistoryByUsernameRequest getSoloMatchHistoryByUsernameRequest) {
+        String filteredUsername = getSoloMatchHistoryByUsernameRequest.getUsername().strip();
+        if (filteredUsername.contains("\u200B")) {
+            filteredUsername = filteredUsername.substring(0, filteredUsername.indexOf("\u200B"));
+        }
+        ArrayList<SoloMatchHistory> soloMatchHistoryList = this.soloMatchHistoryRepository.findAllByUsername(filteredUsername);
+        if (!soloMatchHistoryList.isEmpty()) {
+            GetSoloMatchHistoryByUsernameResponse response = new GetSoloMatchHistoryByUsernameResponse(soloMatchHistoryList);
+            return ResponseEntity.ok().body(response);
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Solo match history not found");
+        }
+    }
+
+    public ResponseEntity<?> getTeamMatchHistoryByTeamName(GetTeamMatchHistoryByTeamNameRequest getTeamMatchHistoryByTeamNameRequest) {
+        String filteredTeamName = getTeamMatchHistoryByTeamNameRequest.getTeamName().strip();
+        if (filteredTeamName.contains("\u200B")) {
+            filteredTeamName = filteredTeamName.substring(0, filteredTeamName.indexOf("\u200B"));
+        }
+        ArrayList<TeamMatchHistory> teamMatchHistoryList = this.teamMatchHistoryRepository.findAllByTeamName(filteredTeamName);
+        if (!teamMatchHistoryList.isEmpty()) {
+            return ResponseEntity.ok().body(new GetTeamMatchHistoryByTeamNameResponse(teamMatchHistoryList));
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team match history not found");
+        }
     }
 }
 
