@@ -11,8 +11,7 @@ import java.util.Date;
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+
     @Autowired
     private JavaMailSenderImpl mailSender;
 
