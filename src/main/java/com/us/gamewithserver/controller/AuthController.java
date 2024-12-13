@@ -47,11 +47,11 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody User user, BindingResult result) {
         try {
-            if (result.hasErrors()) {
-                // Collect validation errors
-                String errorMessage = result.getAllErrors().get(0).getDefaultMessage();
-                return ResponseEntity.badRequest().body(errorMessage);
-            }
+//            if (result.hasErrors()) {
+//                // Collect validation errors
+//                String errorMessage = result.getAllErrors().get(0).getDefaultMessage();
+//                return ResponseEntity.badRequest().body(errorMessage);
+//            }
 
             // Register the user
             userService.registerUser(user);
@@ -65,18 +65,16 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, BindingResult result) {
         try {
-            if (result.hasErrors()) {
-                String errorMessage = result.getAllErrors().get(0).getDefaultMessage();
-                return ResponseEntity.badRequest().body(errorMessage);
-            }
 
             User user = userService.authenticateUser(loginRequest.getUsernameOrEmail(), loginRequest.getPassword());
 
             // Create session
             Session session = userService.createSession(user);
 
-            // Return session token to client
-            return ResponseEntity.ok(new SessionResponse(session.getSessionToken()));
+            //get name of user
+            String alias = user.getFullName();
+
+            return ResponseEntity.ok(new SessionResponse(session.getSessionToken(), alias));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
@@ -94,10 +92,10 @@ public class AuthController {
     @PostMapping("/change-password")
     public ResponseEntity<?> passwordChange(@RequestHeader("Session-Token") String sessionToken, @Valid @RequestBody PasswordChangeRequest passwordChangeRequest, BindingResult result) {
         try {
-            if (result.hasErrors()) {
-                String errorMessage = result.getAllErrors().get(0).getDefaultMessage();
-                return ResponseEntity.badRequest().body(errorMessage);
-            }
+//            if (result.hasErrors()) {
+//                String errorMessage = result.getAllErrors().get(0).getDefaultMessage();
+//                return ResponseEntity.badRequest().body(errorMessage);
+//            }
 
             if (!passwordChangeRequest.getNewPassword().equals(passwordChangeRequest.getConfirmPassword())) {
                 return ResponseEntity.badRequest().body("New password and confirmation do not match");
