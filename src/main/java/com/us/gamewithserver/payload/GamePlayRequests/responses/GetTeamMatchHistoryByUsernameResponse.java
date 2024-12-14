@@ -8,6 +8,6 @@ import java.util.ArrayList;
 
 @Data
 @AllArgsConstructor
-public class GetTeamMatchHistoryByTeamNameResponse {
+public class GetTeamMatchHistoryByUsernameResponse {
     private ArrayList<TeamMatchHistory> matchHistoryList;
 }
