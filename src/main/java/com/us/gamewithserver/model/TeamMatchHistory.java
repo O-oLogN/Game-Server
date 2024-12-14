@@ -17,11 +17,3 @@ public class TeamMatchHistory {
     private String teamName;
     private int teamSize;
 }
-
-@Data
-@AllArgsConstructor
-class TeamMember {
-    private String userId;
-    private String username;
-    private int deathCount;
-}

@@ -95,8 +95,13 @@ public class GamePlayController {
         return this.gamePlayService.getSoloMatchHistoryByUsername(getSoloMatchHistoryByUsernameRequest);
     }
 
-    @PostMapping("/get-team-match-history")
-    public ResponseEntity<?> getTeamMatchHistory(@RequestBody GetTeamMatchHistoryByTeamNameRequest getTeamMatchHistoryByTeamNameRequest) {
+    @PostMapping("/get-team-match-history-by-team-name")
+    public ResponseEntity<?> getTeamMatchHistoryByTeamName(@RequestBody GetTeamMatchHistoryByTeamNameRequest getTeamMatchHistoryByTeamNameRequest) {
         return this.gamePlayService.getTeamMatchHistoryByTeamName(getTeamMatchHistoryByTeamNameRequest);
+    }
+
+    @PostMapping("/get-team-match-history-by-user-name")
+    public ResponseEntity<?> getTeamMatchHistoryByUsername(@RequestBody GetTeamMatchHistoryByUsernameRequest getTeamMatchHistoryByUsernameRequest) {
+        return this.gamePlayService.getTeamMatchHistoryByUsername(getTeamMatchHistoryByUsernameRequest);
     }
 }

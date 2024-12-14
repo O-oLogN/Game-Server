@@ -275,6 +275,29 @@ public class GamePlayService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team match history not found");
         }
     }
+
+    public ResponseEntity<?> getTeamMatchHistoryByUsername(GetTeamMatchHistoryByUsernameRequest getTeamMatchHistoryByUsernameRequest) {
+        String username = getTeamMatchHistoryByUsernameRequest.getUsername().strip();
+        String filteredUsername = username.contains("\u200B") ? username.substring(0, username.indexOf("\u200B")) : username;
+        List<TeamMatchHistory> allTeamMatchHistoryList = this.teamMatchHistoryRepository.findAll();
+        ArrayList<TeamMatchHistory> returnedTeamMatchHistoryList = new ArrayList<>();
+        allTeamMatchHistoryList.forEach(teamMatchHistory -> {
+            TeamMember[] teamMembers = teamMatchHistory.getTeamMembers();
+            for (TeamMember teamMember : teamMembers) {
+                boolean oge = teamMember.getUsername().equalsIgnoreCase(filteredUsername);
+                if (oge) {
+                    returnedTeamMatchHistoryList.add(teamMatchHistory);
+                    break;
+                }
+            }
+        });
+        if (!returnedTeamMatchHistoryList.isEmpty()) {
+            return ResponseEntity.ok().body(new GetTeamMatchHistoryByUsernameResponse(returnedTeamMatchHistoryList));
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team match history not found");
+        }
+    }
 }
 
 

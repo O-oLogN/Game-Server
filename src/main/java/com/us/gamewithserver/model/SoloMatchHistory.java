@@ -17,13 +17,3 @@ public class SoloMatchHistory {
     private String startTime;   // dd-mm-yyyy hh:mm
 }
 
-@Data
-@AllArgsConstructor
-class PlayerStats {
-    private String userId;
-    private String username;
-    private boolean won;
-    private float points;
-    private float damageDealt;
-    private float damageTaken;
-}
