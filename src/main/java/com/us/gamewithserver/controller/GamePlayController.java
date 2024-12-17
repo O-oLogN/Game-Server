@@ -35,7 +35,7 @@ public class GamePlayController {
         return this.gamePlayService.newGame(newGameRequest);
     }
 
-    @GetMapping("/rank")
+    @GetMapping("/get-all-single-stats")
     public ResponseEntity<?> playerRank() {
         return this.gamePlayService.rankPlayers();
     }
