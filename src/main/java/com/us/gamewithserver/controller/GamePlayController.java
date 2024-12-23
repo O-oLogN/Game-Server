@@ -80,6 +80,11 @@ public class GamePlayController {
         return this.gamePlayService.updateScenePoints(updateScenePointsRequest);
     }
 
+    @PostMapping("/update-solo-stats")
+    public ResponseEntity<?> updateResult(@RequestBody SoloResultRequest res) {
+        return this.gamePlayService.updateResult(res);
+    }
+
     @GetMapping("/get-all-solo-stats")
     public ResponseEntity<?> getAllSoloStats() {
         return this.gamePlayService.getAllSoloStats();

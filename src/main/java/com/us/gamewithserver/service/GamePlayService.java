@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.random.RandomGenerator;
 
 @Service
 public class GamePlayService {
@@ -274,6 +275,97 @@ public class GamePlayService {
         else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team match history not found");
         }
+    }
+
+    public ResponseEntity<?> updateResult(SoloResultRequest res) {
+        String winner = res.getWinner();
+        String loser = res.getLoser();
+
+        // find winner and loser in solo stats
+
+        Optional<SoloStats> winnerStats = soloStatsRepository.findByUserName(winner);
+        Optional<SoloStats> loserStats = soloStatsRepository.findByUserName(loser);
+
+        // if null create a new solo stats for the winner and loser
+
+        int newId1 = RandomGenerator.getDefault().nextInt(1000);
+        int newId2 = RandomGenerator.getDefault().nextInt(1000);
+
+
+        if (winnerStats.isEmpty()) {
+            winnerStats = Optional.of(new SoloStats(UUID.randomUUID().toString() , "", 0f, 1000f, String.valueOf(newId1), winner));
+        }
+
+        if (loserStats.isEmpty()) {
+            loserStats = Optional.of(new SoloStats(UUID.randomUUID().toString() , "", 0f, 1000f, String.valueOf(newId2), loser));
+        }
+
+
+        // update previous ratings
+        winnerStats.get().setPreviousPoints(winnerStats.get().getTotalPoints());
+        loserStats.get().setPreviousPoints(loserStats.get().getTotalPoints());
+
+        // Before coding, determine the method for counting the value
+        /*
+        K factor = 32.000
+        We determine 2 ratings Ra and Rb for players A and B
+        We determine the expected score Ea and Eb for players A and B
+        We determine the actual score Sa and Sb for players A and B
+        We determine the new ratings R'a and R'b for players A and B
+
+        Ea = 1 / (1 + 10^((Rb - Ra) / 400))
+        Eb = 1 / (1 + 10^((Ra - Rb) / 400))
+
+        Sa = 1 if player A wins, 0 if player B wins
+        Sb = 1 if player B wins, 0 if player A wins
+
+        R'a = Ra + K * (Sa - Ea)
+        R'b = Rb + K * (Sb - Eb)
+
+         */
+        // code
+
+        float k = 32.000f;
+        float winnerRating = winnerStats.get().getTotalPoints();
+        float loserRating = loserStats.get().getTotalPoints();
+
+        float expectedWinner = 1 / (1 + (float)Math.pow(10, (loserRating - winnerRating) / 400));
+        float expectedLoser = 1 / (1 + (float)Math.pow(10, (winnerRating - loserRating) / 400));
+
+        float winnerScore = 1;
+        float loserScore = 0;
+
+
+        float newWinnerRating = winnerRating + k * (winnerScore - expectedWinner);
+        float newLoserRating = loserRating + k * (loserScore - expectedLoser);
+
+        winnerStats.get().setTotalPoints(newWinnerRating);
+        loserStats.get().setTotalPoints(newLoserRating);
+
+        // add each string of the column matchHistory of the winner and loser
+        String winnerMatchHistory = winnerStats.get().getMatchHistory();
+        String loserMatchHistory = loserStats.get().getMatchHistory();
+
+        //L-1200.75,W-1500.5,L-1200,L-1000,W-1105.75,W-1300,W-1410.5,W-1500,L-1375.5,W-1500,W-1615.75,L-1540,L-1200.75,L-1100,W-1305.5
+
+        winnerMatchHistory += "," + "W-" + winnerRating;
+        loserMatchHistory += "," +  "L-" + loserRating;
+
+        if (winnerMatchHistory.charAt(0)== ',') {
+            winnerMatchHistory = winnerMatchHistory.substring(1);
+        }
+
+        if (loserMatchHistory.charAt(0)== ',') {
+            loserMatchHistory = loserMatchHistory.substring(1);
+        }
+
+        winnerStats.get().setMatchHistory(winnerMatchHistory);
+        loserStats.get().setMatchHistory(loserMatchHistory);
+
+        soloStatsRepository.save(winnerStats.get());
+        soloStatsRepository.save(loserStats.get());
+
+        return ResponseEntity.ok().body("Result updated successfully");
     }
 
     public ResponseEntity<?> getTeamMatchHistoryByUsername(GetTeamMatchHistoryByUsernameRequest getTeamMatchHistoryByUsernameRequest) {
