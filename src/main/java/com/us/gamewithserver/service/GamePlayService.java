@@ -152,6 +152,7 @@ public class GamePlayService {
         }
         ArrayList<PlayerRanking> allPlayerRankings = (ArrayList<PlayerRanking>) this.playerRankingRepository.findAll();
         Collections.sort(allPlayerRankings);
+        Collections.reverse(allPlayerRankings);
         AtomicBoolean userFound = new AtomicBoolean(true);
 
         ArrayList<String> usernameList = new ArrayList<>();
