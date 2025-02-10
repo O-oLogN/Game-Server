@@ -84,10 +84,16 @@ public class GamePlayService {
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
-            gameProgress.getScenePoints()[sceneIndex - 1] = points;
-            gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
-            this.gameProgressRepository.save(gameProgress);
-            return ResponseEntity.ok().build();
+
+            if (sceneIndex > 0) {
+                gameProgress.getScenePoints()[sceneIndex - 1] = points;
+                gameProgress.setLastUpdated(new Date(System.currentTimeMillis()));
+                this.gameProgressRepository.save(gameProgress);
+                return ResponseEntity.ok().build();
+            } else {
+                // still return okay, but do not change anything in the database
+                return ResponseEntity.ok().build();
+            }
         }
         else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
@@ -191,8 +197,8 @@ public class GamePlayService {
             gameProgress.setHealthStatus(1);
             gameProgress.setDeathCount(0);
             gameProgress.setSceneIndex(1);
-            gameProgress.setScenePoints(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
-            gameProgress.setSceneFinishTimes(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0});
+            gameProgress.setScenePoints(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+            gameProgress.setSceneFinishTimes(new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
             gameProgress.setCurrentPosition("");
             gameProgress.setLastUpdated(null);
             this.gameProgressRepository.save(gameProgress);
@@ -232,9 +238,15 @@ public class GamePlayService {
         Optional<GameProgress> optionalGameProgress = this.gameProgressRepository.findByUserId(userId);
         if (optionalGameProgress.isPresent()) {
             GameProgress gameProgress = optionalGameProgress.get();
-            gameProgress.getSceneFinishTimes()[sceneIndex - 1] = sceneFinishTime;
-            this.gameProgressRepository.save(gameProgress);
-            return ResponseEntity.ok().build();
+            if (sceneIndex > 0) {
+                gameProgress.getSceneFinishTimes()[sceneIndex - 1] = sceneFinishTime;
+                this.gameProgressRepository.save(gameProgress);
+                return ResponseEntity.ok().build();
+            } else {
+                // still return okay, but do not change anything in the database
+                return ResponseEntity.ok().build();
+            }
+
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Game progress not found");
     }
@@ -389,6 +401,66 @@ public class GamePlayService {
         else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team match history not found");
         }
+    }
+
+    public ResponseEntity<?> updateMultiHistoryMatch(MultiHistoryMatch multiHistoryMatch) {
+
+        System.out.println(multiHistoryMatch);
+
+        // Initialize a TeamMatchHistory instance
+        TeamMatchHistory teamMatchHistory = new TeamMatchHistory();
+
+        try {
+            // Set duration, start time, and team size
+            teamMatchHistory.setDuration((int) Math.round(multiHistoryMatch.getTimeElapsed())); // Cast to int
+            teamMatchHistory.setStartTime(multiHistoryMatch.getDateStartTime());
+            teamMatchHistory.setTeamSize(multiHistoryMatch.getPlayerNames().size());
+
+            // Create an array for TeamMember objects
+            TeamMember[] teamMembers = new TeamMember[multiHistoryMatch.getPlayerNames().size()];
+
+            for (int i = 0; i < multiHistoryMatch.getPlayerNames().size(); i++) {
+                // Extract player name
+                String name = multiHistoryMatch.getPlayerNames().get(i);
+
+                // Look up SoloStats by user name
+                Optional<SoloStats> soloStats = soloStatsRepository.findByUserName(name);
+
+                // Handle missing SoloStats
+                if (soloStats.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Solo stats not found for user: " + name);
+                }
+
+                // Get user ID and death count
+                String userId = soloStats.get().getUserId();
+                int deathCount = multiHistoryMatch.getDeathCount();
+
+                // Create and assign TeamMember
+                teamMembers[i] = new TeamMember(userId, name, deathCount);
+            }
+
+            // Assign team members to the history record
+            teamMatchHistory.setTeamMembers(teamMembers);
+
+            // create team name = "Team + the sum string of id of all team members"
+            String teamName = "Team-";
+            for (TeamMember teamMember : teamMembers) {
+                teamName += teamMember.getUserId();
+            }
+
+            teamMatchHistory.setTeamName(teamName);
+            // Save to the repository
+            teamMatchHistoryRepository.save(teamMatchHistory);
+
+            // Return success response
+            return ResponseEntity.ok().body("Team match history updated successfully");
+
+        } catch (Exception e) {
+            // Handle unexpected errors
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating team match history: " + e.getMessage());
+        }
+
     }
 }
 
