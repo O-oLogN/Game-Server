@@ -57,8 +57,8 @@ public class UserService {
                 "",
                 1,
                 0,
-                new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0},
-                new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new float[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 null
         ));
 
